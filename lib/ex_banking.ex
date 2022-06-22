@@ -7,6 +7,8 @@ defmodule ExBanking do
     Agent.start(fn -> %{} end, name: __MODULE__)
   end
 
+  @spec create_user(user :: String.t()) :: :ok | {:error, :wrong_arguments | :user_already_exists}
+
   def create_user(user) when is_binary(user) do
     check_if_user_registered(user)
     |> case do
@@ -25,6 +27,10 @@ defmodule ExBanking do
   end
 
   def create_user(user) when not is_binary(user), do: {:error, :wrong_arguments}
+
+  @spec deposit(user :: String.t(), amount :: number, currency :: String.t()) ::
+          {:ok, new_balance :: number}
+          | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
 
   def deposit(_user, _amount, currency) when not is_binary(currency),
     do: {:error, :wrong_arguments}
@@ -96,6 +102,8 @@ defmodule ExBanking do
     end
   end
 
+  @spec withdraw(user :: String.t, amount :: number, currency :: String.t) :: {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :not_enough_money | :too_many_requests_to_user}
+
   def withdraw(user, _amount, _currency) when not is_binary(user),
     do: {:error, :wrong_arguments}
 
@@ -142,6 +150,8 @@ defmodule ExBanking do
 
   def withdraw(_), do: {:error, :wrong_arguments}
 
+  @spec get_balance(user :: String.t, currency :: String.t) :: {:ok, balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
+
   def get_balance(user, _currency) when not is_binary(user), do: {:error, :wrong_arguments}
   def get_balance(_user, currency) when not is_binary(currency), do: {:error, :wrong_arguments}
 
@@ -167,6 +177,8 @@ defmodule ExBanking do
         {:error, :too_many_arguments}
     end
   end
+
+  @spec send(from_user :: String.t, to_user :: String.t, amount :: number, currency :: String.t) :: {:ok, from_user_balance :: number, to_user_balance :: number} | {:error, :wrong_arguments | :not_enough_money | :sender_does_not_exist | :receiver_does_not_exist | :too_many_requests_to_sender | :too_many_requests_to_receiver}
 
   def send(_from_user, _to_user, amount, _currency) when not is_number(amount),
     do: {:error, :wrong_arguments}
